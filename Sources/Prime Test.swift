@@ -42,9 +42,12 @@ extension BigUInt {
         precondition(self > (0 as BigUInt))
         let dec = self - 1
 
+        if debug { print( "begin isStrongProbablePrime" ) }
+
         let r = dec.trailingZeroBitCount
         let d = dec >> r
 
+        if debug { print( "generating test" ) }
         var test = base.power(d, modulus: self)
         if test == 1 || test == dec { return true }
 
@@ -53,7 +56,11 @@ extension BigUInt {
             let normalized = self << shift
             for i in 1 ..< r {
                 if debug { print( "iterating deep SPPT, current round \(i)" ) }
+
+                if debug { print( "squaring test" ) }
                 test *= test
+
+                if debug { print( "dividing test" ) }
                 test.formRemainder(dividingBy: normalized, normalizedBy: shift)
                 if test == 1 {
                     return false
@@ -116,7 +123,11 @@ extension BigUInt {
         /// Otherwise do as many rounds of random SPPT as required.
         for r in 0 ..< rounds {
             if debug { print( "iterating SPPT, current round \(r)" ) }
+
+            if debug { print( "generating random base" ) }
             let random = BigUInt.randomInteger(lessThan: self - 2) + 2
+
+            if debug { print( "calling isStrongProbablePrime" ) }
             guard isStrongProbablePrime(random, debug: true) else {
                 return false
             }
