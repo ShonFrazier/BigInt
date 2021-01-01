@@ -133,10 +133,10 @@ extension BigInt {
     /// Returns true iff this integer passes the [strong probable prime test][sppt] for the specified base.
     ///
     /// [sppt]: https://en.wikipedia.org/wiki/Probable_prime
-    public func isStrongProbablePrime(_ base: BigInt) -> Bool {
+    public func isStrongProbablePrime(_ base: BigInt, debug: Bool = false) -> Bool {
         precondition(base.sign == .plus)
         if self.sign == .minus { return false }
-        return self.magnitude.isStrongProbablePrime(base.magnitude)
+        return self.magnitude.isStrongProbablePrime(base.magnitude, debug: debug)
     }
 
     /// Returns true if this integer is probably prime. Returns false if this integer is definitely not prime.
@@ -152,8 +152,8 @@ extension BigInt {
     /// return a correct result.
     ///
     /// [mrpt]: https://en.wikipedia.org/wiki/Miller–Rabin_primality_test
-    public func isPrime(rounds: Int = 10) -> Bool {
+    public func isPrime(rounds: Int = 10, debug: Bool = false) -> Bool {
         if self.sign == .minus { return false }
-        return self.magnitude.isPrime(rounds: rounds)
+        return self.magnitude.isPrime(rounds: rounds, debug: debug)
     }
 }
