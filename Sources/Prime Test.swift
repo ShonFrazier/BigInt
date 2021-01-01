@@ -37,7 +37,7 @@ extension BigUInt {
     /// Returns true iff this integer passes the [strong probable prime test][sppt] for the specified base.
     ///
     /// [sppt]: https://en.wikipedia.org/wiki/Probable_prime
-    public func isStrongProbablePrime(_ base: BigUInt) -> Bool {
+    public func isStrongProbablePrime(_ base: BigUInt, debug: Bool = false) -> Bool {
         precondition(base > (1 as BigUInt))
         precondition(self > (0 as BigUInt))
         let dec = self - 1
@@ -51,7 +51,8 @@ extension BigUInt {
         if r > 0 {
             let shift = self.leadingZeroBitCount
             let normalized = self << shift
-            for _ in 1 ..< r {
+            for i in 1 ..< r {
+                if debug { print( "iterating deep SPPT, current round \(i)" ) }
                 test *= test
                 test.formRemainder(dividingBy: normalized, normalizedBy: shift)
                 if test == 1 {
@@ -76,7 +77,7 @@ extension BigUInt {
     /// return a correct result.
     ///
     /// [mrpt]: https://en.wikipedia.org/wiki/Miller–Rabin_primality_test
-    public func isPrime(rounds: Int = 10) -> Bool {
+    public func isPrime(rounds: Int = 10, debug: Bool = false) -> Bool {
         if count <= 1 && self[0] < 2 { return false }
         if count == 1 && self[0] < 4 { return true }
 
@@ -85,11 +86,14 @@ extension BigUInt {
 
         // Quickly check for small primes.
         for i in 1 ..< primes.count {
+            if debug { print( "iterating small primes, current index \(i)" ) }
             let p = primes[i]
             if self.count == 1 && self[0] == p {
+                if debug { print( "self is a small prime, returning true" ) }
                 return true
             }
             if self.quotientAndRemainder(dividingByWord: p).remainder == 0 {
+                if debug { print( "self was divided evenly by a small prime, returning false" ) }
                 return false
             }
         }
@@ -97,7 +101,8 @@ extension BigUInt {
         /// Give an exact answer when we can.
         if self < pseudoPrimes.last! {
             for i in 0 ..< pseudoPrimes.count {
-                guard isStrongProbablePrime(BigUInt(primes[i])) else {
+                if debug { print( "iterating pseudo primes, current index \(i)" ) }
+                guard isStrongProbablePrime(BigUInt(primes[i]), debug: true) else {
                     break
                 }
                 if self < pseudoPrimes[i] {
@@ -109,9 +114,10 @@ extension BigUInt {
         }
 
         /// Otherwise do as many rounds of random SPPT as required.
-        for _ in 0 ..< rounds {
+        for r in 0 ..< rounds {
+            if debug { print( "iterating SPPT, current round \(r)" ) }
             let random = BigUInt.randomInteger(lessThan: self - 2) + 2
-            guard isStrongProbablePrime(random) else {
+            guard isStrongProbablePrime(random, debug: true) else {
                 return false
             }
         }
